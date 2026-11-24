@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build Docker image
         run: docker build -t hotel-app:${{ github.sha }} ./app
-            - name: Scan image with Trivy
+      - name: Scan image with Trivy
         run: |
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
