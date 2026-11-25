@@ -1,15 +1,22 @@
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 WORKDIR /app
+RUN npm config set fetch-retries 5 \
+ && npm config set fetch-retry-mintimeout 20000 \
+ && npm config set fetch-retry-maxtimeout 120000 \
+ && npm config set fetch-timeout 300000
 COPY package*.json ./
 RUN npm ci
 COPY . .
 RUN npm run lint && npm test
 
-FROM node:20-alpine
+FROM node:22-alpine
 WORKDIR /app
 ENV NODE_ENV=production
+RUN apk upgrade --no-cache
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev \
+ && npm cache clean --force \
+ && rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 COPY --from=build /app/src ./src
 USER node
 EXPOSE 3000
